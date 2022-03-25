@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace SteamVRSwitcher
 {
@@ -20,7 +21,7 @@ namespace SteamVRSwitcher
             "vrwebhelper"
         };
 
-        private readonly string _SteamInstallPath = @"D:\Jeux\Steam\steamapps\common";
+        private readonly string _SteamInstallPath = $@"{Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Valve\Steam").GetValue("SteamPath")?? @"C:/Program Files (x86)/Steam"}/steamapps/common"; //:Gets SteamDirectory from windows registry or sets default if not found
         private readonly string _SteamVREnabledPath;
         private readonly string _SteamVRDisabledPath;
 
@@ -42,7 +43,7 @@ namespace SteamVRSwitcher
                 {
                     var item = (JArray)json["runtime"];
                     if (item != null)
-                        _SteamInstallPath = item.First.ToString().Replace("SteamVR\\", "");
+                        _SteamInstallPath = item.First.ToString().Slice(0,"SteamVR")?? item.First.ToString(); //:both cases ("SteamVR" and "SteamVR/") are taken into account while udsing this function
                 }
             }
 
@@ -111,5 +112,30 @@ namespace SteamVRSwitcher
 
             return false;
         }
+    }
+
+    public static class Functions
+    {
+	    public static string Slice(this string s, int Start, string EndsWith)
+	    {
+		    var end =s.LastIndexOf(EndsWith);
+		    if (end < 0) return null;
+
+		    if (Start > end) throw new ArgumentException($"start ({Start}) is be bigger than end ({end})");
+
+		    return s.Slice(Start, end);
+
+	    }
+
+	    /// <summary>
+	    /// Slices the string form Start to End not including End
+	    /// </summary>
+	    public static string Slice(this string s, int Start = 0, int End = Int32.MaxValue)
+	    {
+		    if (Start < 0) throw new ArgumentOutOfRangeException($"Start is {Start}");
+		    if (Start > End) throw new ArgumentException($"start ({Start}) is be bigger than end ({End})");
+		    if (End > s.Length) End = s.Length;
+		    return s.Substring(Start, End - Start);
+	    }
     }
 }
