@@ -21,7 +21,7 @@ namespace SteamVRSwitcher
             "vrwebhelper"
         };
 
-        private readonly string _SteamInstallPath = $@"{Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Valve\Steam").GetValue("SteamPath")?? @"C:/Program Files (x86)/Steam"}/steamapps/common"; //:Gets SteamDirectory from windows registry or sets default if not found
+         private readonly string _SteamInstallPath = $@"{Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 250820").GetValue("InstallLocation").ToString().Slice(0,"SteamVR")?? @"C:/Program Files (x86)/Steam"}/steamapps/common"; //:Gets SteamVR directory from windows registry or sets default if not found
         private readonly string _SteamVREnabledPath;
         private readonly string _SteamVRDisabledPath;
 
